@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Search from "./components/Search";
+import Spinner from "./components/Spinner";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 
@@ -16,22 +17,32 @@ const API_OPTIONS = {
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [movieList, setMovieList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchMovies = async () => {
+    setLoading(true);
+    setErrorMessage("");
     try {
       const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
 
       const response = await fetch(endpoint, API_OPTIONS);
 
       if (!response.ok) {
-		throw new Error('Failed to fetch movies')
-	  }
-	  const data = await response.json()
-	  console.log(data);
-	  
+        throw new Error("Failed to fetch movies");
+      }
+      const data = await response.json();
+      if (data.response === "False") {
+        setErrorMessage(data.Error || "Failed to fetch movies");
+        setMovieList([]);
+        return;
+      }
+      setMovieList(data.results || []);
     } catch (error) {
       console.error(error);
       setErrorMessage("error fetching movies");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,9 +64,23 @@ function App() {
         </header>
 
         <section className="all-movies">
-          <h2>All Movies</h2>
+          <h2 className="mt-[40px]">All Movies</h2>
 
-          {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+          {loading ? (
+            <p className="text-white">
+              <Spinner />
+            </p>
+          ) : errorMessage ? (
+            <p className="text-red-500">{errorMessage}</p>
+          ) : (
+            <ul>
+              {movieList.map((movie) => (
+                <p className="text-white" key={movie.id}>
+                  {movie.title}
+                </p>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </main>
