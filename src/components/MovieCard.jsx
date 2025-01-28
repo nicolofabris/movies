@@ -20,7 +20,7 @@ const MovieCard = ({
 			</div>
 
 			<span>•</span>
-			<p className="lang">{original_language}</p>
+			<p className="lang">{original_language} </p>
 
 			<span>•</span>
 			<p className="year">
